@@ -88,7 +88,7 @@ function todoItemsReducer(state: TodoItemsState, action: TodoItemsAction) {
             return {
                 ...state,
                 todoItems: [
-                    { id: generateId(), done: false, ...action.data.todoItem },
+                    { id: generateId(), done: false, ...action.data },
                     ...state.todoItems,
                 ],
             };
