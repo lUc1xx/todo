@@ -1,10 +1,10 @@
 import React from 'react';
 import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
-import { createMuiTheme } from '@material-ui/core/styles';
-import { ThemeProvider } from '@material-ui/styles';
-import { TodoItemsList } from './TodoItems';
-import { TodoItemsContextProvider } from './TodoItemsContext';
+import {createMuiTheme} from '@material-ui/core/styles';
+import {ThemeProvider} from '@material-ui/styles';
+import {TodoItemsList} from './TodoItems';
+import {TodoItemsContextProvider} from './TodoItemsContext';
 import TodoItemForm from './TodoItemForm';
 
 const theme = createMuiTheme({
@@ -22,13 +22,18 @@ function App() {
     return (
         <TodoItemsContextProvider>
             <ThemeProvider theme={theme}>
-                <Content />
+                <Content/>
             </ThemeProvider>
         </TodoItemsContextProvider>
     );
 }
 
+
 function Content() {
+    // const onDragEnd = useCallback(() => {
+    //     console.log('onDragEnd')
+    // }, []);
+
     return (
         <Container maxWidth="sm">
             <header>
@@ -37,8 +42,8 @@ function Content() {
                 </Typography>
             </header>
             <main>
-                <TodoItemForm />
-                <TodoItemsList />
+                <TodoItemForm/>
+                <TodoItemsList/>
             </main>
         </Container>
     );

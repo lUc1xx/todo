@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import {useCallback, useState} from 'react';
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
@@ -7,10 +7,11 @@ import IconButton from '@material-ui/core/IconButton';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import DeleteIcon from '@material-ui/icons/Delete';
-import { makeStyles } from '@material-ui/core/styles';
+import {makeStyles} from '@material-ui/core/styles';
 import classnames from 'classnames';
-import { motion } from 'framer-motion';
-import { TodoItem, useTodoItems } from './TodoItemsContext';
+import {motion} from 'framer-motion';
+import {TodoItem, useTodoItems} from './TodoItemsContext';
+import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd';
 
 const spring = {
     type: 'spring',
@@ -26,31 +27,55 @@ const useTodoItemListStyles = makeStyles({
     },
 });
 
+const reorder = (list: any, startIndex: any, endIndex: any) => {
+    const result = Array.from(list);
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
+
+    return result;
+};
+
 export const TodoItemsList = function () {
-    const { todoItems } = useTodoItems();
+    const {todoItems, dispatch} = useTodoItems();
 
     const classes = useTodoItemListStyles();
 
-    const sortedItems = todoItems.slice().sort((a, b) => {
-        if (a.done && !b.done) {
-            return 1;
-        }
+    function onDragEnd(result: any) {
+        console.log(result)
+        if (!result.destination) return;
 
-        if (!a.done && b.done) {
-            return -1;
-        }
+        if (result.destination.index === result.source.index) return;
 
-        return 0;
-    });
+        const test = reorder(
+            todoItems,
+            result.source.index,
+            result.destination.index
+        );
+
+        dispatch({type: 'reorder', data: test})
+    }
 
     return (
-        <ul className={classes.root}>
-            {sortedItems.map((item) => (
-                <motion.li key={item.id} transition={spring} layout={true}>
-                    <TodoItemCard item={item} />
-                </motion.li>
-            ))}
-        </ul>
+        <DragDropContext onDragEnd={onDragEnd}>
+            <Droppable droppableId="items">
+                {provided => (
+                    <ul className={classes.root} {...provided.droppableProps} ref={provided.innerRef}>
+                        {todoItems.map((item, index) => (
+                                <Draggable key={item.id} draggableId={item.id} index={index}>
+                                    {provided => (
+                                        <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                                            <motion.li key={item.id} transition={spring} layout={true}>
+                                                <TodoItemCard item={item}/>
+                                            </motion.li>
+                                        </div>
+                                    )}
+                                </Draggable>
+
+                        ))}
+                    </ul>
+                )}
+            </Droppable>
+        </DragDropContext>
     );
 };
 
@@ -65,12 +90,12 @@ const useTodoItemCardStyles = makeStyles({
     },
 });
 
-export const TodoItemCard = function ({ item }: { item: TodoItem }) {
+export const TodoItemCard = function ({item}: { item: TodoItem }) {
     const classes = useTodoItemCardStyles();
-    const { dispatch } = useTodoItems();
+    const {dispatch} = useTodoItems();
 
     const handleDelete = useCallback(
-        () => dispatch({ type: 'delete', data: { id: item.id } }),
+        () => dispatch({type: 'delete', data: {id: item.id}}),
         [item.id, dispatch],
     );
 
@@ -78,7 +103,7 @@ export const TodoItemCard = function ({ item }: { item: TodoItem }) {
         () =>
             dispatch({
                 type: 'toggleDone',
-                data: { id: item.id },
+                data: {id: item.id},
             }),
         [item.id, dispatch],
     );
@@ -92,7 +117,7 @@ export const TodoItemCard = function ({ item }: { item: TodoItem }) {
             <CardHeader
                 action={
                     <IconButton aria-label="delete" onClick={handleDelete}>
-                        <DeleteIcon />
+                        <DeleteIcon/>
                     </IconButton>
                 }
                 title={
