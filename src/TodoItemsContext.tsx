@@ -17,10 +17,20 @@ interface TodoItemsState {
     todoItems: TodoItem[];
 }
 
-interface TodoItemsAction {
-    type: 'loadState' | 'add' | 'delete' | 'toggleDone' | 'reorder';
-    data: any;
-}
+// T2 - решил путем создания type`ов
+// обычно - создаю для каждого action отдельный интерфейс
+
+export type TodoItemAdd = {title: string, details?: string};
+
+type TodoItemsAction =
+      {type: 'loadState' | 'reorder', data: TodoItemsState}
+    | {type: 'add', data: TodoItemAdd}
+    | {type: 'delete' | 'toggleDone', data: {id: string}}
+
+// interface TodoItemsAction {
+//     type: 'loadState' | 'add' | 'delete' | 'toggleDone' | 'reorder';
+//     data: any;
+// }
 
 const TodoItemsContext = createContext<
     (TodoItemsState & { dispatch: (action: TodoItemsAction) => void }) | null
@@ -104,7 +114,7 @@ function todoItemsReducer(state: TodoItemsState, action: TodoItemsAction) {
                 ],
             };
         case 'reorder': {
-            return {...state, todoItems: action.data}
+            return action.data
         }
 
         default:

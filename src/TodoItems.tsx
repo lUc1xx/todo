@@ -33,13 +33,13 @@ export const TodoItemsList = function () {
         if (!result.destination) return;
         if (result.destination.index === result.source.index) return;
 
-        const test = reorderItems(
+        const reorderTodoItems = reorderItems(
             todoItems,
             result.source.index,
             result.destination.index
         );
 
-        dispatch({type: 'reorder', data: test})
+        dispatch({type: 'reorder', data: {todoItems: reorderTodoItems}})
     };
 
     return (
