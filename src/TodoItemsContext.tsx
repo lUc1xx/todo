@@ -20,28 +20,27 @@ interface TodoItemsState {
 // T2 - решил путем создания type`ов
 // обычно - создаю для каждого action отдельный интерфейс
 
-export type TodoItemAdd = {title: string, details?: string};
+export type TodoItemAdd = { title: string, details?: string };
 
 type TodoItemsAction =
-      {type: 'loadState' | 'reorder', data: TodoItemsState}
-    | {type: 'add', data: TodoItemAdd}
-    | {type: 'delete' | 'toggleDone', data: {id: string}}
+      { type: 'loadState' | 'reorder', data: TodoItemsState }
+    | { type: 'add', data: TodoItemAdd }
+    | { type: 'delete' | 'toggleDone', data: { id: string } }
+    | { type: 'edit', data: { id: string, title: string, details?: string } }
 
 // interface TodoItemsAction {
 //     type: 'loadState' | 'add' | 'delete' | 'toggleDone' | 'reorder';
 //     data: any;
 // }
 
-const TodoItemsContext = createContext<
-    (TodoItemsState & { dispatch: (action: TodoItemsAction) => void }) | null
->(null);
+const TodoItemsContext = createContext<(TodoItemsState & { dispatch: (action: TodoItemsAction) => void }) | null>(null);
 
-const defaultState = { todoItems: [] };
+const defaultState = {todoItems: []};
 const localStorageKey = 'todoListState';
 
 export const TodoItemsContextProvider = ({
-    children,
-}: {
+                                             children,
+                                         }: {
     children?: ReactNode;
 }) => {
     const [state, dispatch] = useReducer(todoItemsReducer, defaultState);
@@ -51,8 +50,9 @@ export const TodoItemsContextProvider = ({
 
         if (savedState) {
             try {
-                dispatch({ type: 'loadState', data: JSON.parse(savedState) });
-            } catch {}
+                dispatch({type: 'loadState', data: JSON.parse(savedState)});
+            } catch {
+            }
         }
     }, []);
 
@@ -61,7 +61,7 @@ export const TodoItemsContextProvider = ({
     }, [state]);
 
     return (
-        <TodoItemsContext.Provider value={{ ...state, dispatch }}>
+        <TodoItemsContext.Provider value={{...state, dispatch}}>
             {children}
         </TodoItemsContext.Provider>
     );
@@ -88,7 +88,7 @@ function todoItemsReducer(state: TodoItemsState, action: TodoItemsAction) {
             return {
                 ...state,
                 todoItems: [
-                    { id: generateId(), done: false, ...action.data },
+                    {id: generateId(), done: false, ...action.data},
                     ...state.todoItems,
                 ],
             };
@@ -96,12 +96,12 @@ function todoItemsReducer(state: TodoItemsState, action: TodoItemsAction) {
             return {
                 ...state,
                 todoItems: state.todoItems.filter(
-                    ({ id }) => id !== action.data.id,
+                    ({id}) => id !== action.data.id,
                 ),
             };
         case 'toggleDone':
             const itemIndex = state.todoItems.findIndex(
-                ({ id }) => id === action.data.id,
+                ({id}) => id === action.data.id,
             );
             const item = state.todoItems[itemIndex];
 
@@ -109,12 +109,25 @@ function todoItemsReducer(state: TodoItemsState, action: TodoItemsAction) {
                 ...state,
                 todoItems: [
                     ...state.todoItems.slice(0, itemIndex),
-                    { ...item, done: !item.done },
+                    {...item, done: !item.done},
                     ...state.todoItems.slice(itemIndex + 1),
                 ],
             };
         case 'reorder': {
             return action.data
+        }
+
+        case 'edit': {
+            console.log('edit')
+            const list = state.todoItems.map(item =>
+                item.id === action.data.id ?
+                    {
+                        ...item,
+                        title: action.data.title,
+                        details: action.data.details
+                    } : item
+            );
+            return {...state, todoItems: list}
         }
 
         default:
